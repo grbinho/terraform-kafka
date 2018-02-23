@@ -1,11 +1,17 @@
-resource "aws_instance" "zookeeper" {
+
+
+resource "aws_instance" "kafka" {
   count = "${var.instance_count}"
   ami           = "${var.ami}"
   instance_type = "${var.instance_type}"
-  key_name = "${var.aws_key_name}"
-  private_ip = "${format("%s%d", var.ip_prefix, count.index + 1)}"
+  key_name = "${var.aws_key_name}"  
   vpc_security_group_ids = ["${var.security_group_id}"]
   subnet_id = "${var.subnet_id}"
+
+  ebs_block_device {
+    device_name ="dev/sdh"
+    volume_size = 200    
+  }  
 
   provisioner "file" {
     source      = "${path.module}/init.sh"
@@ -18,11 +24,22 @@ resource "aws_instance" "zookeeper" {
     }
   }
 
+  provisioner "file" {
+    source      = "${path.module}/server.properties"
+    destination = "/tmp/server.properties"
+  
+    connection {
+      type     = "ssh"
+      user = "${var.ssh_username}"
+      private_key = "${var.aws_private_key}"
+    }
+  }
+
   provisioner "remote-exec" {
     inline = [
-      "export ZOOKEEPER_VERSION=${var.zookeeper_version}",
+      "export KAFKA_VERSION=${var.kafka_version}",
       "chmod +x /tmp/init.sh",
-      "/tmp/init.sh ${count.index + 1} ${var.ip_prefix} ${var.instance_count} > /tmp/init.log"
+      "/tmp/init.sh ${count.index + 1} ${var.instance_count} ${format("%s/%s", var.zookeeper_addresses, var.cluster_name)} > /tmp/init.log"
     ]
 
     connection {
@@ -31,8 +48,4 @@ resource "aws_instance" "zookeeper" {
       private_key = "${var.aws_private_key}"
     }
   }
-}
-
-output "node_address" {
-  value = "${format("%s:2181",join(":2181,", aws_instance.zookeeper.*.private_ip))}"
 }
