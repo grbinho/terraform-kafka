@@ -14,10 +14,15 @@ resource "aws_instance" "kafka" {
     volume_type = "gp2"  
     device_name = "/dev/xvdb"
     delete_on_termination = true
-  }
+  }  
+}
+
+resource "null_resource" "provision_machines" {
+  count = "${var.instance_count}"
 
   connection {
     type     = "ssh"
+    host = "${element(aws_instance.kafka.*.public_dns, count.index)}"
     user = "${var.ssh_username}"
     private_key = "${var.aws_private_key}"
   }
@@ -36,7 +41,7 @@ resource "aws_instance" "kafka" {
     inline = [
       "export KAFKA_VERSION=${var.kafka_version}",
       "chmod +x /tmp/init.sh",
-      "/tmp/init.sh ${count.index + 1} ${var.instance_count} ${format("%s/%s", var.zookeeper_addresses, var.cluster_name)} > /tmp/init.log"
+      "/tmp/init.sh ${count.index + 1} ${var.instance_count} ${format("%s/%s", var.zookeeper_addresses, var.cluster_name)} ${element(aws_instance.kafka.*.public_dns, count.index)} > /tmp/init.log"
     ]  
   }
 }

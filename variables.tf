@@ -18,3 +18,19 @@ variable "public_subnet_cidr" {
     description = "CIDR for the public subnet"
     default = "10.0.1.0/24"
 }
+
+variable "zookeeper_ensamble_size" {
+    default = 5
+}
+
+variable "kafka_broker_count" {
+    default = 3
+}
+
+variable "zookeeper_instance_type" {
+    default = "t2.micro"
+}
+
+variable "kafka_instance_type" {
+    default = "t2.small"
+}

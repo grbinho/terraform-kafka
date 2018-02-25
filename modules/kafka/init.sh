@@ -22,6 +22,9 @@ export KAFKA_JVM_PERFORMANCE_OPTS="-server -XX:+UseG1GC -XX:MaxGCPauseMillis=20 
 export KAFKA_BROKER_ID=$1
 COUNT_OF_NODES=$2
 ZOOKEEPER_CONNECT=$3
+PUBLIC_DNS=$4
+
+echo "Public DNS: $PUBLIC_DNS"
 
 if [ ! -e "kafka_2.11-$KAFKA_VERSION.tgz" ]; then
     echo "Downloading kafka"
@@ -41,6 +44,7 @@ if [ ! -e "/tmp/server.properties.new" ]; then
     echo "broker.id=$KAFKA_BROKER_ID" >> /tmp/server.properties.new
     echo "zookeeper.connect=""$ZOOKEEPER_CONNECT""" >> /tmp/server.properties.new
     echo "log.dirs=""/data/kafka/logs""" >> /tmp/server.properties.new
+    echo "listeners=PLAINTEXT://$PUBLIC_DNS:9092" >> /tmp/server.properties.new
     echo "Finished writing configuration"
 fi
 echo "Copying kafka configuration to /usr/local/kafka/config/server.properties"
@@ -49,6 +53,6 @@ rm /tmp/server.properties.new
 
 #Start kafka
 echo "Starting kafka"
-eval $(/usr/local/kafka/bin/kafka-server-start.sh -daemon /usr/local/kafka/config/server.properties)
+/usr/local/kafka/bin/kafka-server-start.sh -daemon /usr/local/kafka/config/server.properties
 echo "Kafka started"
 sleep 5
