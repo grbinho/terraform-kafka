@@ -21,6 +21,9 @@ resource "aws_subnet" "kafka_public" {
 
 resource "aws_internet_gateway" "kafka_gateway" {
     vpc_id = "${aws_vpc.kafka_vpc.id}"
+    tags {
+        Name = "kafka-vpc"
+    }
 }
 
 resource "aws_route" "internet_access" {
@@ -32,12 +35,18 @@ resource "aws_route" "internet_access" {
 resource "aws_eip" "kafka_eip" {
   vpc      = true
   depends_on = ["aws_internet_gateway.kafka_gateway"]
+   tags {
+        Name = "kafka-vpc"
+    }
 }
 
 resource "aws_nat_gateway" "kafka_nat" {
     allocation_id = "${aws_eip.kafka_eip.id}"
     subnet_id = "${aws_subnet.kafka_public.id}"
     depends_on = ["aws_internet_gateway.kafka_gateway"]
+     tags {
+        Name = "kafka-vpc"
+    }
 }
 
 resource "aws_security_group" "kafka_sg" {
@@ -93,6 +102,12 @@ resource "aws_security_group" "kafka_sg" {
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }     
+        ingress {
+        from_port = 9092
+        to_port = 9092
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }     
 
     egress {
         from_port = 0
@@ -102,7 +117,7 @@ resource "aws_security_group" "kafka_sg" {
     }
 
     tags {
-        Name = "KAFKASG"
+        Name = "kafka-vpc"
     }
 }
 

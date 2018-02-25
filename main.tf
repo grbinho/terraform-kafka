@@ -15,13 +15,17 @@ module "zookeeper" {
   subnet_id ="${aws_subnet.kafka_public.id}"
   ip_prefix = "10.0.1.2"
   zookeeper_version = "3.4.10"
-  instance_count=2
+  instance_count = 5
+}
+
+output "zookeeper_addresses" {
+    value = "${module.zookeeper.node_address}"
 }
 
 module "kafka" {
   source ="./modules/kafka"
   ami = "${lookup(var.amis, var.aws_region)}"
-  instance_type = "t2.small"
+  instance_type = "t2.micro"
   aws_key_name = "${var.aws_key_name}"
   aws_private_key = "${file(var.aws_key_file)}"
   ssh_username = "ubuntu"
@@ -30,11 +34,11 @@ module "kafka" {
   kafka_version = "1.0.0"
   cluster_name = "kafka-test"
   zookeeper_addresses = "${module.zookeeper.node_address}"
-  instance_count = 2
+  instance_count = 5
 }
 
-output "zookeeper_addresses" {
-    value = "${module.zookeeper.node_address}"
+output "kafka_public_dns" {
+  value = "${module.kafka.node_address}"
 }
 
 
