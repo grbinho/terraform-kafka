@@ -6,6 +6,7 @@ By default 5 node zookeeper ensable is created as well as 5 node kafka cluster.
 ## Usage
 
 Create a file `terraform.tfvars` and add all required variables to it
+
 Example:
 ```
 aws_region = "eu-west-1"
@@ -22,4 +23,4 @@ To create the environment run `terraform apply`
 To delete the environment run `terraform destroy`
 
 ### Notes
-Initialization scripts expect Ubuntu 16.04 as the immage. Ami provided in the example is available in the Ireland region. If you use another region, you will probably need to change ami.
+Initialization scripts expect Ubuntu 16.04 as the image. Ami provided in the example is available in the Ireland region. If you use another region, you will probably need to change ami.
